@@ -1,11 +1,18 @@
 // app/app.js
 import { Logger } from '/app/logger.js'
+import { Player } from '/player/player.js'
 
 const logger = new Logger(document.getElementById('logBody'))
 window.__logger = logger   // 方便 console debug
 logger.log('sys', 'App initialized')
 
 const state = { activeScenario: null, player: null }
+
+state.player = new Player({
+  video: document.getElementById('contentVideo'),
+  adContainer: document.getElementById('adContainer'),
+  logger
+})
 
 async function loadScenarios() {
   try {
