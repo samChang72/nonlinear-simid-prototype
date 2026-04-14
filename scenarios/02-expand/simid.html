@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/shared/simid-base.css">
+  <style>
+    .state { display: none; }
+    .state.active { display: flex; }
+
+    .collapsed {
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .collapsed .label { font-size: 13px; font-weight: 600; }
+
+    .expanded {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0;
+      overflow: hidden;
+    }
+    .hero {
+      flex: 1;
+      background: linear-gradient(135deg, #4a9eff 0%, #8c4dff 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+    .body {
+      padding: 12px 16px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .title { font-size: 16px; font-weight: 700; }
+    .desc { font-size: 12px; color: #bbb; }
+    .actions { display: flex; justify-content: flex-end; padding: 0 16px 12px; }
+  </style>
+</head>
+<body>
+  <!-- 預設態 (320x50) -->
+  <div class="simid-overlay state collapsed active" id="collapsedView">
+    <div class="label">查看產品詳情 ▸</div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="closeCollapsed">✕</button>
+  </div>
+
+  <!-- 展開態 (640x360) -->
+  <div class="simid-overlay state expanded" id="expandedView">
+    <div class="hero">🛍️</div>
+    <div class="body">
+      <div class="title">春季限定產品系列</div>
+      <div class="desc">精選新品現正 85 折，數量有限售完為止。</div>
+    </div>
+    <div class="actions">
+      <button class="simid-cta" id="cta">加入購物車</button>
+    </div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="closeExpanded">✕</button>
+  </div>
+
+  <script type="module">
+    import { SimidCreative } from '/shared/simid-protocol.js'
+
+    const simid = new SimidCreative()
+    const collapsedView = document.getElementById('collapsedView')
+    const expandedView = document.getElementById('expandedView')
+
+    const showState = (name) => {
+      collapsedView.classList.toggle('active', name === 'collapsed')
+      expandedView.classList.toggle('active', name === 'expanded')
+    }
+
+    simid.on('SIMID:Player:init', () => simid.ready())
+
+    collapsedView.addEventListener('click', (e) => {
+      if (e.target.id === 'closeCollapsed') return
+      simid.expand(640, 360)
+      showState('expanded')
+    })
+
+    document.getElementById('closeCollapsed').onclick = (e) => {
+      e.stopPropagation()
+      simid.requestStop('user_close')
+    }
+
+    document.getElementById('closeExpanded').onclick = () => {
+      simid.collapse()
+      showState('collapsed')
+    }
+
+    document.getElementById('cta').onclick = () =>
+      simid.clickThru('https://example.com/product?s=02')
+
+    simid.start()
+  </script>
+</body>
+</html>
