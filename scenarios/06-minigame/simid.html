@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/shared/simid-base.css">
+  <style>
+    .state { display: none; }
+    .state.active { display: flex; }
+
+    .collapsed {
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .collapsed .label { font-size: 13px; font-weight: 600; }
+
+    .expanded {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0;
+      background: linear-gradient(180deg, #1a2a4a 0%, #0a1128 100%);
+      overflow: hidden;
+    }
+    .hud {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; font-size: 13px; font-weight: 600;
+      background: rgba(0,0,0,0.25);
+    }
+    .hud .score { color: #ffd166; }
+    .hud .time { color: #4a9eff; font-variant-numeric: tabular-nums; }
+
+    .arena {
+      position: relative; flex: 1; overflow: hidden;
+    }
+    .balloon {
+      position: absolute; width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; cursor: pointer;
+      background: radial-gradient(circle at 30% 30%, #ff8fa3, #e5384f);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      transition: transform .12s ease;
+      user-select: none;
+    }
+    .balloon:active { transform: scale(0.88); }
+
+    .result {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 12px; background: rgba(10,17,40,0.92);
+    }
+    .result .final-score {
+      font-size: 32px; font-weight: 800; color: #ffd166;
+    }
+    .result .msg { font-size: 14px; color: #bbb; }
+  </style>
+</head>
+<body>
+  <!-- 預設態 -->
+  <div class="simid-overlay state collapsed active" id="collapsedView">
+    <div class="label">🎈 點擊挑戰 3 秒得高分！</div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="closeCollapsed">✕</button>
+  </div>
+
+  <!-- 遊戲態 -->
+  <div class="simid-overlay state expanded" id="expandedView">
+    <div class="hud">
+      <div>分數：<span class="score" id="score">0</span></div>
+      <div>剩餘 <span class="time" id="time">3.0</span> 秒</div>
+    </div>
+    <div class="arena" id="arena"></div>
+    <div class="result" id="result" style="display:none;">
+      <div class="msg">你得到</div>
+      <div class="final-score" id="finalScore">0</div>
+      <div class="msg">分</div>
+      <button class="simid-cta" id="reward">領取獎品</button>
+    </div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="closeExpanded">✕</button>
+  </div>
+
+  <script type="module">
+    import { SimidCreative } from '/shared/simid-protocol.js'
+
+    const simid = new SimidCreative()
+    simid.on('SIMID:Player:init', () => simid.ready())
+
+    const collapsedView = document.getElementById('collapsedView')
+    const expandedView = document.getElementById('expandedView')
+    const scoreEl = document.getElementById('score')
+    const timeEl = document.getElementById('time')
+    const arena = document.getElementById('arena')
+    const resultEl = document.getElementById('result')
+    const finalScoreEl = document.getElementById('finalScore')
+
+    const showState = (name) => {
+      collapsedView.classList.toggle('active', name === 'collapsed')
+      expandedView.classList.toggle('active', name === 'expanded')
+    }
+
+    let score = 0
+    let spawnInterval = null
+    let tickInterval = null
+    let endTimeout = null
+    let endTime = 0
+    let balloons = []
+
+    const cleanupTimers = () => {
+      if (spawnInterval) { clearInterval(spawnInterval); spawnInterval = null }
+      if (tickInterval) { clearInterval(tickInterval); tickInterval = null }
+      if (endTimeout) { clearTimeout(endTimeout); endTimeout = null }
+    }
+
+    const clearBalloons = () => {
+      balloons.forEach((b) => b.remove())
+      balloons = []
+    }
+
+    const spawnBalloon = () => {
+      const w = arena.clientWidth - 44
+      const h = arena.clientHeight - 44
+      if (w <= 0 || h <= 0) return
+      const b = document.createElement('div')
+      b.className = 'balloon'
+      b.textContent = '🎈'
+      b.style.left = Math.floor(Math.random() * w) + 'px'
+      b.style.top = Math.floor(Math.random() * h) + 'px'
+      b.addEventListener('click', (e) => {
+        e.stopPropagation()
+        score += 1
+        scoreEl.textContent = String(score)
+        b.remove()
+        balloons = balloons.filter((x) => x !== b)
+      })
+      arena.appendChild(b)
+      balloons.push(b)
+    }
+
+    const endGame = () => {
+      cleanupTimers()
+      clearBalloons()
+      simid.log({ finalScore: score })
+      finalScoreEl.textContent = String(score)
+      resultEl.style.display = 'flex'
+    }
+
+    const startGame = () => {
+      score = 0
+      scoreEl.textContent = '0'
+      timeEl.textContent = '3.0'
+      resultEl.style.display = 'none'
+      endTime = Date.now() + 3000
+
+      // 延遲一幀等 layout
+      requestAnimationFrame(() => {
+        spawnBalloon()
+        spawnInterval = setInterval(spawnBalloon, 400)
+      })
+      tickInterval = setInterval(() => {
+        const remaining = Math.max(0, endTime - Date.now())
+        timeEl.textContent = (remaining / 1000).toFixed(1)
+      }, 100)
+      endTimeout = setTimeout(endGame, 3000)
+    }
+
+    collapsedView.addEventListener('click', (e) => {
+      if (e.target.id === 'closeCollapsed') return
+      simid.expand(500, 400)
+      showState('expanded')
+      startGame()
+    })
+
+    document.getElementById('closeCollapsed').onclick = (e) => {
+      e.stopPropagation()
+      simid.requestStop('user_close')
+    }
+
+    document.getElementById('closeExpanded').onclick = () => {
+      cleanupTimers()
+      clearBalloons()
+      simid.requestStop('user_close')
+    }
+
+    document.getElementById('reward').onclick = () => {
+      simid.clickThru('https://example.com/reward?s=06&score=' + score)
+    }
+
+    simid.start()
+  </script>
+</body>
+</html>

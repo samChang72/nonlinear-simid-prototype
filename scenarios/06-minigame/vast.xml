@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="4.2" xmlns="http://www.iab.com/VAST">
+  <Ad id="minigame">
+    <InLine>
+      <AdSystem>LocalPrototype</AdSystem>
+      <AdTitle>Gamified Mini Game Non-linear</AdTitle>
+      <Impression><![CDATA[/dev/null]]></Impression>
+      <Creatives>
+        <Creative id="simid-minigame">
+          <NonLinearAds>
+            <NonLinear width="320" height="60" expandedWidth="500" expandedHeight="400" minSuggestedDuration="00:00:30" apiFramework="SIMID">
+              <IFrameResource><![CDATA[/scenarios/06-minigame/simid.html]]></IFrameResource>
+              <NonLinearClickThrough><![CDATA[https://example.com/reward]]></NonLinearClickThrough>
+            </NonLinear>
+          </NonLinearAds>
+        </Creative>
+      </Creatives>
+    </InLine>
+  </Ad>
+</VAST>
