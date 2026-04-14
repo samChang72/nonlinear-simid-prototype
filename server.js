@@ -19,11 +19,19 @@ const MIME = {
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = decodeURIComponent(req.url.split('?')[0])
-  const filePath = path.join(ROOT, urlPath === '/' ? '/index.html' : urlPath)
+  let urlPath
+  try {
+    urlPath = decodeURIComponent(req.url.split('?')[0])
+  } catch {
+    res.writeHead(400)
+    res.end('Bad Request')
+    return
+  }
+  const filePath = path.resolve(ROOT, '.' + (urlPath === '/' ? '/index.html' : urlPath))
 
-  // 安全：禁止跳出 ROOT
-  if (!filePath.startsWith(ROOT)) {
+  // 安全：禁止跳出 ROOT（用 path.relative 判斷，避開 startsWith 的前綴誤判）
+  const rel = path.relative(ROOT, filePath)
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
     res.writeHead(403)
     res.end('Forbidden')
     return
