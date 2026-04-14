@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="4.2" xmlns="http://www.iab.com/VAST">
+  <Ad id="form-capture">
+    <InLine>
+      <AdSystem>LocalPrototype</AdSystem>
+      <AdTitle>Lead Gen Form Non-linear</AdTitle>
+      <Impression><![CDATA[/dev/null]]></Impression>
+      <Creatives>
+        <Creative id="simid-form">
+          <NonLinearAds>
+            <NonLinear width="320" height="60" expandedWidth="480" expandedHeight="280" minSuggestedDuration="00:00:20" apiFramework="SIMID">
+              <IFrameResource><![CDATA[/scenarios/05-form/simid.html]]></IFrameResource>
+              <NonLinearClickThrough><![CDATA[https://example.com/privacy]]></NonLinearClickThrough>
+            </NonLinear>
+          </NonLinearAds>
+        </Creative>
+      </Creatives>
+    </InLine>
+  </Ad>
+</VAST>

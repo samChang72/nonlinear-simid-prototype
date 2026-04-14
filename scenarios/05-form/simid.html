@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/shared/simid-base.css">
+  <style>
+    .state { display: none; }
+    .state.active { display: flex; }
+
+    .collapsed {
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .collapsed .label { font-size: 13px; font-weight: 600; }
+
+    .expanded {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 20px 24px;
+      gap: 10px;
+    }
+    .title { font-size: 16px; font-weight: 700; }
+    .subtitle { font-size: 12px; color: #bbb; }
+    .form { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .email-input {
+      padding: 8px 10px; border-radius: 4px; border: 1px solid #555;
+      background: #1a1d24; color: #fff; font-size: 13px;
+      outline: none;
+    }
+    .email-input.error { border-color: #ff6b6b; }
+    .error-msg {
+      color: #ff6b6b; font-size: 11px; min-height: 14px;
+    }
+    .row { display: flex; justify-content: space-between; align-items: center; }
+    .privacy {
+      color: #8cc0ff; font-size: 11px; text-decoration: underline;
+      cursor: pointer; background: none; border: none; padding: 0;
+    }
+    .success {
+      color: #51cf66; font-weight: 700; font-size: 14px;
+      text-align: center; padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 預設態 -->
+  <div class="simid-overlay state collapsed active" id="collapsedView">
+    <div class="label">✉ 留下 Email 領 9 折優惠</div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="closeCollapsed">✕</button>
+  </div>
+
+  <!-- 展開態 -->
+  <div class="simid-overlay state expanded" id="expandedView">
+    <div class="title">訂閱電子報 領 9 折優惠</div>
+    <div class="subtitle">第一時間收到新品資訊與限時優惠。</div>
+    <form class="form" id="form">
+      <input type="email" class="email-input" id="email" placeholder="your@email.com" required>
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="row">
+        <button type="button" class="privacy" id="privacy">隱私政策</button>
+        <button type="submit" class="simid-cta">訂閱</button>
+      </div>
+    </form>
+    <div class="success" id="success" style="display:none;">✓ 訂閱成功！</div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="closeExpanded">✕</button>
+  </div>
+
+  <script type="module">
+    import { SimidCreative } from '/shared/simid-protocol.js'
+
+    const simid = new SimidCreative()
+    simid.on('SIMID:Player:init', () => simid.ready())
+
+    const collapsedView = document.getElementById('collapsedView')
+    const expandedView = document.getElementById('expandedView')
+    const form = document.getElementById('form')
+    const emailInput = document.getElementById('email')
+    const errorMsg = document.getElementById('errorMsg')
+    const successEl = document.getElementById('success')
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    const showState = (name) => {
+      collapsedView.classList.toggle('active', name === 'collapsed')
+      expandedView.classList.toggle('active', name === 'expanded')
+    }
+
+    let closeTimeout = null
+
+    collapsedView.addEventListener('click', (e) => {
+      if (e.target.id === 'closeCollapsed') return
+      simid.expand(480, 280)
+      showState('expanded')
+    })
+
+    document.getElementById('closeCollapsed').onclick = (e) => {
+      e.stopPropagation()
+      simid.requestStop('user_close')
+    }
+
+    document.getElementById('closeExpanded').onclick = () => {
+      if (closeTimeout) clearTimeout(closeTimeout)
+      simid.requestStop('user_close')
+    }
+
+    document.getElementById('privacy').onclick = () =>
+      simid.clickThru('https://example.com/privacy?s=05')
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const value = emailInput.value.trim()
+      if (!EMAIL_RE.test(value)) {
+        emailInput.classList.add('error')
+        errorMsg.textContent = '請輸入有效的 Email'
+        return
+      }
+      emailInput.classList.remove('error')
+      errorMsg.textContent = ''
+      simid.log({ email: value })
+      form.style.display = 'none'
+      successEl.style.display = 'block'
+      closeTimeout = setTimeout(() => {
+        simid.requestStop('form_submitted')
+      }, 3000)
+    })
+
+    emailInput.addEventListener('input', () => {
+      emailInput.classList.remove('error')
+      errorMsg.textContent = ''
+    })
+
+    simid.start()
+  </script>
+</body>
+</html>
