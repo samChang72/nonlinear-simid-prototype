@@ -4,5 +4,35 @@
     "title": "01 Basic Overlay",
     "description": "SIMID 最小握手實作",
     "vast": "/scenarios/01-basic/vast.xml"
+  },
+  {
+    "id": "02-expand",
+    "title": "02 Expand/Collapse",
+    "description": "動態尺寸協商",
+    "vast": "/scenarios/02-expand/vast.xml"
+  },
+  {
+    "id": "03-carousel",
+    "title": "03 Carousel",
+    "description": "多素材輪播",
+    "vast": "/scenarios/03-carousel/vast.xml"
+  },
+  {
+    "id": "04-countdown",
+    "title": "04 Countdown Timer",
+    "description": "時效型促銷",
+    "vast": "/scenarios/04-countdown/vast.xml"
+  },
+  {
+    "id": "05-form",
+    "title": "05 Form Capture",
+    "description": "Lead Gen 表單",
+    "vast": "/scenarios/05-form/vast.xml"
+  },
+  {
+    "id": "06-minigame",
+    "title": "06 Mini Game",
+    "description": "Gamification 小遊戲",
+    "vast": "/scenarios/06-minigame/vast.xml"
   }
 ]
