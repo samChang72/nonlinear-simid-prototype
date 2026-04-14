@@ -31,11 +31,10 @@
     import { SimidCreative } from '/shared/simid-protocol.js'
 
     const simid = new SimidCreative()
-    simid.on('SIMID:Player:init', () => simid.ready())
 
     const timerEl = document.getElementById('timer')
     const cta = document.getElementById('cta')
-    const endTime = Date.now() + 60 * 1000
+    let endTime = 0
 
     let tickInterval = null
     let endTimeout = null
@@ -68,8 +67,13 @@
       }
     }
 
-    tick()
-    tickInterval = setInterval(tick, 500)
+    // 倒數計時於 Player:init 收到後才起算，避免 iframe 載入延遲影響精度
+    simid.on('SIMID:Player:init', () => {
+      endTime = Date.now() + 60 * 1000
+      tick()
+      tickInterval = setInterval(tick, 500)
+      simid.ready()
+    })
 
     cta.onclick = () => {
       if (ended) return
