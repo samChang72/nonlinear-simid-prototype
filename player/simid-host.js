@@ -87,12 +87,13 @@ export class SimidHost {
       case 'SIMID:Creative:clickThru':
         window.open(data.args?.url, '_blank', 'noopener,noreferrer')
         break
-      case 'SIMID:Creative:expandNonlinear':
+      case 'SIMID:Creative:expandNonlinear': {
         const dims = data.args?.requestedDimensions
         if (dims) this.resize(dims.width, dims.height)
         break
+      }
       case 'SIMID:Creative:collapseNonlinear':
-        // 由 creative 自行在 expand 前記錄初始尺寸後 resize 回去
+        // TODO(階段 5)：host 端記住 initialWidth/Height 並在此自動 resize 回去
         break
       case 'SIMID:Creative:requestStop':
         this._send('SIMID:Player:adStopped')

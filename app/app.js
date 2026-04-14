@@ -8,18 +8,23 @@ logger.log('sys', 'App initialized')
 const state = { activeScenario: null, player: null }
 
 async function loadScenarios() {
-  const res = await fetch('/scenarios/scenarios.json')
-  const list = await res.json()
-  const ul = document.getElementById('scenarioItems')
-  ul.innerHTML = ''
-  list.forEach((s) => {
-    const li = document.createElement('li')
-    li.textContent = s.title
-    li.title = s.description
-    li.dataset.id = s.id
-    li.onclick = () => selectScenario(s)
-    ul.appendChild(li)
-  })
+  try {
+    const res = await fetch('/scenarios/scenarios.json')
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const list = await res.json()
+    const ul = document.getElementById('scenarioItems')
+    ul.innerHTML = ''
+    list.forEach((s) => {
+      const li = document.createElement('li')
+      li.textContent = s.title
+      li.title = s.description
+      li.dataset.id = s.id
+      li.onclick = () => selectScenario(s)
+      ul.appendChild(li)
+    })
+  } catch (err) {
+    logger.log('err', `Failed to load scenarios: ${err.message}`)
+  }
 }
 
 function selectScenario(scenario) {
