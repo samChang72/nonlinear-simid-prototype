@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/shared/simid-base.css">
+  <style>
+    .simid-overlay { justify-content: space-between; }
+    .info { display: flex; flex-direction: column; gap: 2px; }
+    .label { font-size: 11px; color: #bbb; letter-spacing: 1px; }
+    .timer {
+      font-size: 20px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #ffd166;
+    }
+    .simid-cta:disabled {
+      background: #555; color: #aaa; cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="simid-overlay">
+    <div class="info">
+      <div class="label">FLASH SALE</div>
+      <div>限時優惠剩餘 <span class="timer" id="timer">01:00</span></div>
+    </div>
+    <button class="simid-cta" id="cta">立即搶購</button>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="close">✕</button>
+  </div>
+  <script type="module">
+    import { SimidCreative } from '/shared/simid-protocol.js'
+
+    const simid = new SimidCreative()
+    simid.on('SIMID:Player:init', () => simid.ready())
+
+    const timerEl = document.getElementById('timer')
+    const cta = document.getElementById('cta')
+    const endTime = Date.now() + 60 * 1000
+
+    let tickInterval = null
+    let endTimeout = null
+    let ended = false
+
+    const format = (ms) => {
+      const total = Math.max(0, Math.ceil(ms / 1000))
+      const mm = String(Math.floor(total / 60)).padStart(2, '0')
+      const ss = String(total % 60).padStart(2, '0')
+      return `${mm}:${ss}`
+    }
+
+    const stopTimers = () => {
+      if (tickInterval) { clearInterval(tickInterval); tickInterval = null }
+      if (endTimeout) { clearTimeout(endTimeout); endTimeout = null }
+    }
+
+    const tick = () => {
+      const remaining = endTime - Date.now()
+      timerEl.textContent = format(remaining)
+      if (remaining <= 0 && !ended) {
+        ended = true
+        cta.textContent = '已結束'
+        cta.disabled = true
+        if (tickInterval) { clearInterval(tickInterval); tickInterval = null }
+        endTimeout = setTimeout(() => {
+          stopTimers()
+          simid.requestStop('countdown_ended')
+        }, 5000)
+      }
+    }
+
+    tick()
+    tickInterval = setInterval(tick, 500)
+
+    cta.onclick = () => {
+      if (ended) return
+      simid.clickThru('https://example.com/flash-sale?s=04')
+    }
+
+    document.getElementById('close').onclick = () => {
+      stopTimers()
+      simid.requestStop('user_close')
+    }
+
+    simid.start()
+  </script>
+</body>
+</html>
