@@ -16,16 +16,19 @@ export class Player {
   }
 
   _initIma() {
+    if (typeof google === 'undefined' || !google.ima) {
+      this.logger.log('err', 'IMA SDK not loaded')
+      return
+    }
     google.ima.settings.setLocale('zh-TW')
     this.adDisplayContainer = new google.ima.AdDisplayContainer(
       this.adContainer, this.video
     )
     this.adsLoader = new google.ima.AdsLoader(this.adDisplayContainer)
 
-    this.adsLoader.addEventListener(
-      google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
-      (e) => this._onAdsManagerLoaded(e)
-    )
+    // 保留 AD_ERROR listener 以供未來 linear ad fallback 使用。
+    // ADS_MANAGER_LOADED listener 已移除：目前 demo 刻意繞過 IMA ad playback，
+    // 從未呼叫 requestAds，該事件不會觸發（見 loadScenario）。
     this.adsLoader.addEventListener(
       google.ima.AdErrorEvent.Type.AD_ERROR,
       (e) => this.logger.log('err', 'IMA AdError: ' + e.getError())
@@ -44,8 +47,13 @@ export class Player {
 
   async _loadSimidFromVast(vastUrl) {
     try {
-      const xml = await fetch(vastUrl).then((r) => r.text())
+      const res = await fetch(vastUrl)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const xml = await res.text()
       const doc = new DOMParser().parseFromString(xml, 'application/xml')
+      if (doc.querySelector('parsererror')) {
+        throw new Error('Invalid VAST XML')
+      }
       const nonLinear = doc.querySelector('NonLinear')
       if (!nonLinear) throw new Error('No <NonLinear> found in VAST')
       const width = parseInt(nonLinear.getAttribute('width'), 10) || 480
