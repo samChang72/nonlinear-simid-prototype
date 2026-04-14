@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/shared/simid-base.css">
+  <style>
+    .simid-overlay { justify-content: space-between; }
+    .brand { font-weight: 700; font-size: 14px; }
+    .headline { font-size: 12px; color: #bbb; }
+  </style>
+</head>
+<body>
+  <div class="simid-overlay">
+    <div>
+      <div class="brand">SampleBrand</div>
+      <div class="headline">春季新品 85 折開賣中</div>
+    </div>
+    <button class="simid-cta" id="cta">了解更多</button>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="close">✕</button>
+  </div>
+  <script type="module">
+    import { SimidCreative } from '/shared/simid-protocol.js'
+    const simid = new SimidCreative()
+    simid.on('SIMID:Player:init', () => simid.ready())
+    document.getElementById('cta').onclick = () =>
+      simid.clickThru('https://example.com/landing?s=01')
+    document.getElementById('close').onclick = () =>
+      simid.requestStop('user_close')
+    simid.start()
+  </script>
+</body>
+</html>
