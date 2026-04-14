@@ -1,6 +1,7 @@
 {
   "name": "nonlinear-simid-prototype",
   "version": "0.1.0",
+  "private": true,
   "description": "Non-linear Ad + SIMID interactive ad prototype with Google IMA SDK",
   "main": "server.js",
   "scripts": {
