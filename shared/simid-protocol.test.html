@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>SIMID Protocol Test</title></head>
+<body>
+<h1>SIMID Protocol Test Harness</h1>
+<button id="sendInit">Send Player:init</button>
+<button id="sendResize">Send Player:resize</button>
+<pre id="log"></pre>
+<iframe id="frame" src="/shared/simid-protocol.test.creative.html"
+        sandbox="allow-scripts allow-same-origin"
+        style="width:480px;height:70px;border:1px solid #999"></iframe>
+<script type="module">
+  const log = (m) => document.getElementById('log').textContent += m + '\n'
+  window.addEventListener('message', (e) => {
+    log('IN  <-- ' + JSON.stringify(e.data))
+  })
+  const frame = document.getElementById('frame')
+  document.getElementById('sendInit').onclick = () => {
+    const msg = { type:'SIMID:Player:init', messageId:1, sessionId:'test', args:{ videoDimensions:{w:640,h:360} } }
+    frame.contentWindow.postMessage(msg, '*')
+    log('OUT --> ' + JSON.stringify(msg))
+  }
+</script>
+</body></html>

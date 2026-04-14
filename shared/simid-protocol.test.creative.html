@@ -1,0 +1,13 @@
+<!-- shared/simid-protocol.test.creative.html -->
+<!DOCTYPE html>
+<html><body>
+<button id="click">Click</button>
+<script>
+  const post = (type, args={}) => parent.postMessage({ type, sessionId:'test', messageId:Date.now(), args }, '*')
+  window.addEventListener('load', () => post('SIMID:Creative:createSession'))
+  window.addEventListener('message', (e) => {
+    if (e.data.type === 'SIMID:Player:init') post('SIMID:Creative:ready')
+  })
+  document.getElementById('click').onclick = () => post('SIMID:Creative:clickThru', { url:'https://example.com' })
+</script>
+</body></html>
