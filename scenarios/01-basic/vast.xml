@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST version="4.2" xmlns="http://www.iab.com/VAST">
+  <Ad id="basic-overlay">
+    <InLine>
+      <AdSystem>LocalPrototype</AdSystem>
+      <AdTitle>Basic Non-linear Overlay</AdTitle>
+      <Impression><![CDATA[/dev/null]]></Impression>
+      <Creatives>
+        <Creative id="simid-basic">
+          <NonLinearAds>
+            <NonLinear width="480" height="70" minSuggestedDuration="00:00:15" apiFramework="SIMID">
+              <IFrameResource><![CDATA[/scenarios/01-basic/simid.html]]></IFrameResource>
+              <NonLinearClickThrough><![CDATA[https://example.com/landing]]></NonLinearClickThrough>
+            </NonLinear>
+          </NonLinearAds>
+        </Creative>
+      </Creatives>
+    </InLine>
+  </Ad>
+</VAST>
