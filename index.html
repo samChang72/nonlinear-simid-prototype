@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>Non-linear SIMID Prototype</title>
+<link rel="stylesheet" href="/app/app.css">
+<link rel="stylesheet" href="/player/player.css">
+<script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+</head>
+<body>
+  <header class="app-header">
+    <h1>Non-linear Ad + SIMID 互動廣告原型</h1>
+    <span class="app-subtitle">Google IMA SDK + VAST + SIMID 1.1</span>
+  </header>
+
+  <main class="app-main">
+    <aside class="scenario-list" id="scenarioList">
+      <h2>場景</h2>
+      <ul id="scenarioItems"></ul>
+    </aside>
+
+    <section class="player-section">
+      <div class="player-wrapper" id="playerWrapper">
+        <video id="contentVideo" playsinline controls
+               src="/shared/assets/content.mp4"></video>
+        <div id="adContainer" class="ad-container"></div>
+      </div>
+      <div class="player-controls">
+        <button id="playBtn">播放</button>
+        <button id="resetBtn">重新載入場景</button>
+      </div>
+    </section>
+
+    <aside class="log-panel">
+      <h2>事件 Log</h2>
+      <div class="log-body" id="logBody"></div>
+      <button id="clearLogBtn">清空</button>
+    </aside>
+  </main>
+
+  <script src="/app/app.js" type="module"></script>
+</body>
+</html>
