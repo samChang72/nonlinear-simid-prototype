@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/shared/simid-base.css">
+  <style>
+    .simid-overlay { padding: 0; overflow: hidden; }
+    .track {
+      position: absolute; inset: 0;
+      display: flex; transition: transform .4s ease;
+    }
+    .slide {
+      flex: 0 0 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      gap: 18px; padding: 0 32px;
+      box-sizing: border-box; cursor: pointer;
+      color: #fff;
+    }
+    .slide .thumb {
+      width: 96px; height: 96px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px; flex: 0 0 96px;
+    }
+    .slide .info { display: flex; flex-direction: column; gap: 4px; }
+    .slide .name { font-size: 16px; font-weight: 700; }
+    .slide .price { font-size: 13px; color: #ffd166; }
+    .slide.s0 .thumb { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+    .slide.s1 .thumb { background: linear-gradient(135deg, #4a9eff, #2e6bd1); }
+    .slide.s2 .thumb { background: linear-gradient(135deg, #51cf66, #2f9e44); }
+
+    .arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(0,0,0,0.6); color: #fff; border: none;
+      cursor: pointer; font-size: 14px; line-height: 1; z-index: 2;
+    }
+    .arrow.prev { left: 8px; }
+    .arrow.next { right: 8px; }
+
+    .dots {
+      position: absolute; bottom: 8px; left: 50%;
+      transform: translateX(-50%); display: flex; gap: 6px; z-index: 2;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.4); border: none;
+      cursor: pointer; padding: 0;
+    }
+    .dot.active { background: #fff; }
+  </style>
+</head>
+<body>
+  <div class="simid-overlay">
+    <div class="track" id="track"></div>
+    <button class="arrow prev" id="prev">‹</button>
+    <button class="arrow next" id="next">›</button>
+    <div class="dots" id="dots"></div>
+    <span class="simid-badge">廣告 AD</span>
+    <button class="simid-close" id="close">✕</button>
+  </div>
+  <script type="module">
+    import { SimidCreative } from '/shared/simid-protocol.js'
+
+    const products = [
+      { emoji: '👟', name: '商品 A — 運動鞋', price: 'NT$ 1,280' },
+      { emoji: '🎧', name: '商品 B — 無線耳機', price: 'NT$ 2,490' },
+      { emoji: '⌚', name: '商品 C — 智慧手錶', price: 'NT$ 3,990' }
+    ]
+
+    const simid = new SimidCreative()
+    simid.on('SIMID:Player:init', () => simid.ready())
+
+    const track = document.getElementById('track')
+    const dots = document.getElementById('dots')
+
+    products.forEach((p, i) => {
+      const slide = document.createElement('div')
+      slide.className = `slide s${i}`
+      slide.innerHTML = `
+        <div class="thumb">${p.emoji}</div>
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="price">${p.price}</div>
+        </div>
+      `
+      slide.addEventListener('click', () => {
+        simid.clickThru(`https://example.com/p${i + 1}?s=03&i=${i}`)
+      })
+      track.appendChild(slide)
+
+      const dot = document.createElement('button')
+      dot.className = 'dot' + (i === 0 ? ' active' : '')
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation()
+        goTo(i)
+        pauseAutoPlay()
+      })
+      dots.appendChild(dot)
+    })
+
+    let current = 0
+    let autoTimer = null
+    let pauseTimer = null
+
+    const render = () => {
+      track.style.transform = `translateX(-${current * 100}%)`
+      Array.from(dots.children).forEach((d, i) => {
+        d.classList.toggle('active', i === current)
+      })
+    }
+
+    const goTo = (i) => {
+      const next = ((i % products.length) + products.length) % products.length
+      if (next === current) return
+      current = next
+      render()
+      simid.log({ carousel: current })
+    }
+
+    const startAutoPlay = () => {
+      stopAutoPlay()
+      autoTimer = setInterval(() => goTo(current + 1), 3000)
+    }
+
+    const stopAutoPlay = () => {
+      if (autoTimer) {
+        clearInterval(autoTimer)
+        autoTimer = null
+      }
+    }
+
+    const pauseAutoPlay = () => {
+      stopAutoPlay()
+      if (pauseTimer) clearTimeout(pauseTimer)
+      pauseTimer = setTimeout(() => startAutoPlay(), 5000)
+    }
+
+    document.getElementById('prev').addEventListener('click', (e) => {
+      e.stopPropagation()
+      goTo(current - 1)
+      pauseAutoPlay()
+    })
+    document.getElementById('next').addEventListener('click', (e) => {
+      e.stopPropagation()
+      goTo(current + 1)
+      pauseAutoPlay()
+    })
+    document.getElementById('close').addEventListener('click', (e) => {
+      e.stopPropagation()
+      stopAutoPlay()
+      if (pauseTimer) clearTimeout(pauseTimer)
+      simid.requestStop('user_close')
+    })
+
+    startAutoPlay()
+    simid.start()
+  </script>
+</body>
+</html>
