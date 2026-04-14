@@ -7,11 +7,15 @@ export class SimidHost {
     this.messageCounter = 0
     this.sessionId = null
     this.initTimeout = null
+    this.initialWidth = null
+    this.initialHeight = null
     this._onMessage = this._onMessage.bind(this)
   }
 
   load({ src, width, height, position = 'bottom' }) {
     this.destroy()
+    this.initialWidth = width
+    this.initialHeight = height
     this.iframe = document.createElement('iframe')
     this.iframe.sandbox = 'allow-scripts allow-same-origin'
     this.iframe.style.cssText = `
@@ -45,6 +49,8 @@ export class SimidHost {
     }
     this.iframe = null
     this.sessionId = null
+    this.initialWidth = null
+    this.initialHeight = null
   }
 
   _send(type, args = {}) {
@@ -93,7 +99,9 @@ export class SimidHost {
         break
       }
       case 'SIMID:Creative:collapseNonlinear':
-        // TODO(階段 5)：host 端記住 initialWidth/Height 並在此自動 resize 回去
+        if (this.initialWidth && this.initialHeight) {
+          this.resize(this.initialWidth, this.initialHeight)
+        }
         break
       case 'SIMID:Creative:requestStop':
         this._send('SIMID:Player:adStopped')
